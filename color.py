@@ -1,0 +1,7 @@
+GREEN = "#859900"
+YELLOW = "#c59900"
+RED = "#cb4b16"
+BLUE = "#268bd2"
+DARK = "#002b36"
+SLIGHTDARK = "#174652"
+LIGHT = "#fdf6e3"
