@@ -10,6 +10,7 @@ class barManagerModule(Module):
         super().__init__()
 
         self.bar = self.spawn_bar()
+        self.monitor_count = 1
 
         self.listen("wm", "monitors", self._monitors)
         self.listen("bar", "line", self._bar)
@@ -48,10 +49,15 @@ class barManagerModule(Module):
         self._ipc = None
 
     def _monitors(self):
-        print("[WARN][barManager]", "monitors:", "not yet implemented")
+        print("[WARN][barManager]", "monitors:", "not yet fully implemented")
+        self.monitor_count = len(list(filter(lambda m: m.active, self._wm.monitors.values())))
 
     def _bar(self, line):
-        self.bar.stdin.write(line.encode() + b"\n")
+        multimon_line = ""
+        for i in range(self.monitor_count):
+            multimon_line += "%{{S{}}}".format(i) + line
+
+        self.bar.stdin.write(multimon_line.encode() + b"\n")
         self.bar.stdin.flush()
 
     def _bar_action(self):
