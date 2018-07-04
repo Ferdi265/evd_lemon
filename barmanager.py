@@ -9,7 +9,14 @@ class barManagerModule(Module):
     def __init__(self):
         super().__init__()
 
-        self.bar = Popen([
+        self.bar = self.spawn_bar()
+
+        self.listen("wm", "monitors", self._monitors)
+        self.listen("bar", "line", self._bar)
+        self.listen_private("bar_action", self._bar_action)
+
+    def spawn_bar(self):
+        bar = Popen([
             "lemonbar",
             "-a", "21",
             "-f", "DejaVu Sans:bold:size=10",
@@ -19,11 +26,8 @@ class barManagerModule(Module):
             "-B", SLIGHTDARK,
             "-F", LIGHT
         ], stdin = PIPE, stdout = PIPE, stderr = DEVNULL)
-        self.register_file(self.bar.stdout, "bar_action")
-
-        self.listen("wm", "monitors", self._monitors)
-        self.listen("bar", "line", self._bar)
-        self.listen_private("bar_action", self._bar_action)
+        self.register_file(bar.stdout, "bar_action")
+        return bar
 
     def register_daemon(self, daemon):
         super().register_daemon(daemon)
