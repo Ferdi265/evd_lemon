@@ -30,6 +30,11 @@ class barManagerModule(Module):
         self.register_file(bar.stdout, "bar_action")
         return bar
 
+    def respawn_bar(self):
+        self.unregister_file(self.bar.stdout)
+        self.bar.kill()
+        self.bar = self.spawn_bar()
+
     def register_daemon(self, daemon):
         super().register_daemon(daemon)
 
@@ -50,7 +55,12 @@ class barManagerModule(Module):
 
     def _monitors(self):
         print("[WARN][barManager]", "monitors:", "not yet fully implemented")
-        self.monitor_count = len(list(filter(lambda m: m.active, self._wm.monitors.values())))
+        active = list(filter(lambda m: m.active, self._wm.monitors.values()))
+        monitor_count = len(active)
+        if monitor_count != self.monitor_count:
+            # monitor count changed, need to respawn bar
+            self.respawn_bar()
+            self.monitor_count = monitor_count
 
     def _bar(self, line):
         multimon_line = ""
