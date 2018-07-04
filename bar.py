@@ -112,7 +112,6 @@ class barModule(Module):
 
         # add at least one clickable empty workspace
         workspace_part += self._workspace_markup(FG(SLIGHTDARK), nextnum)
-        workspace_part += FG(RESET) + BG(RESET)
 
         self.workspace_part = workspace_part
         self.update_bar()
