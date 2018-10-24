@@ -6,34 +6,29 @@ from time import time
 from datetime import datetime
 from color import *
 
-RESET = "-"
-CENTER = "%{c}"
-LEFT = "%{l}"
-RIGHT = "%{r}"
-
-FG = lambda c: "%{F" + c + "}"
-BG = lambda c: "%{B" + c + "}"
-
-def CLICK(name, button = None):
-    return "%{A" + (str(button) if button != None else "") + ":" + name + ":}"
-
-CLICKEND = "%{A}"
+def FONTAWESOME(s):
+    return '<span font="Font Awesome 5 Free">' + s + '</span>'
 
 class barModule(Module):
     name = "bar"
     def __init__(self):
         super().__init__()
-       
+
         self.workspace_part = ""
         self.mode_part = ""
         self.title_part = ""
         self.network_part = ""
         self.battery_part = ""
         self.date_part = ""
-        self.close_part = BG(RED) + FG(DARK) + CLICK("k") + " \uf00d " + CLICKEND + FG(RESET) + BG(RESET)
 
-        self.listen("wm", "workspaces", self._workspaces)
-        self.listen("wm", "mode", self._mode)
+        self.close_part = {
+            "name": "close",
+            "full_text": " " + FONTAWESOME("\uf00d") + " ",
+            "markup": "pango",
+            "color": DARK,
+            "background": RED
+        }
+
         self.listen("wm", "title", self._title)
         self.listen("network", "state", self._network)
         self.listen("battery", "state", self._battery)
@@ -42,11 +37,11 @@ class barModule(Module):
         super().register_daemon(daemon)
 
         if "wm" not in daemon.modules:
-            daemon.register(i3Module())
-        
+            daemon.register(i3Module(events = ["window", "workspace", "shutdown"]))
+
         if "network" not in daemon.modules:
             daemon.register(networkModule())
-        
+
         if "battery" not in daemon.modules:
             daemon.register(batteryModule())
 
@@ -70,104 +65,94 @@ class barModule(Module):
     def _check_clock(self, time_diff = 0):
         now = time()
         dt_now = datetime.fromtimestamp(now)
-        self.date_part = "{:%Y-%m-%d %H:%M:%S}".format(dt_now)
+        self.date_part = {
+            "name": "date",
+            "full_text": "{:%Y-%m-%d %H:%M:%S}".format(dt_now),
+            "align": "center"
+        }
         self.update_bar()
-        
+
         dt_last_sec = datetime(dt_now.year, dt_now.month, dt_now.day, dt_now.hour, dt_now.minute, dt_now.second)
         next_sec = dt_last_sec.timestamp() + 1
         now = time()
         self.timeout(next_sec - now, self._check_clock)
 
     def update_bar(self):
-        bar_line = (
-            CENTER + self.title_part +
-            LEFT + self.workspace_part + self.mode_part +
-            RIGHT + self.network_part + " " + self.battery_part + " " + self.date_part + " " + self.close_part
-        )
+        bar_line = [
+            self.title_part,
+            self.network_part,
+            self.battery_part,
+            self.date_part,
+            self.close_part
+        ]
         self.emit("bar", "line", bar_line)
 
-    def _workspace_markup(self, color, num):
-        return color + CLICK("s" + str(num)) + CLICK("m" + str(num), 3) + " \uf111 " + CLICKEND + CLICKEND + BG(RESET) + FG(RESET)
-
-    def _workspaces(self):
-        workspace_part = ""
-
-        nextnum = 0
-        for workspace in sorted(self._wm.workspaces.values(), key = lambda w: w.num):
-            while nextnum < workspace.num:
-                workspace_part += self._workspace_markup(FG(SLIGHTDARK), nextnum)
-                nextnum += 1
-
-            color = FG(DARK)
-            if workspace.urgent:
-                color += BG(RED)
-            elif workspace.focused:
-                color += BG(GREEN)
-            elif workspace.visible:
-                color += BG(BLUE)
-            else:
-                color = ""
-            workspace_part += self._workspace_markup(color, workspace.num)
-            nextnum = workspace.num + 1
-
-        # add at least one clickable empty workspace
-        workspace_part += self._workspace_markup(FG(SLIGHTDARK), nextnum)
-
-        self.workspace_part = workspace_part
-        self.update_bar()
-    
-    def _mode(self):
-        if self._wm.mode == None:
-            self.mode_part = ""
-        else:
-            self.mode_part = BG(GREEN) + FG(DARK) + " " + self._wm.mode + " mode " + BG(RESET) + FG(RESET)
-        self.update_bar()
-    
     def _title(self):
-        self.title_part = self._wm.title.replace("%", "%%")
+        self.title_part = {
+            "name": "title",
+            "full_text": self._wm.title
+        }
         self.update_bar()
 
     def _network(self, state):
-        color = BG(GREEN) + FG(DARK)
-        reset = BG(RESET) + FG(RESET)
+        bg = GREEN
+        fg = DARK
+
+        icon = None
         if state["ethernet"] == "connected":
-            icon = " \uf0ac "
+            icon = " " + FONTAWESOME("\uf0ac") + " "
         elif state["wifi"] == "connected":
-            icon = " \uf1eb "
+            icon = " " + FONTAWESOME("\uf1eb") + " "
+
+        if icon == None:
+            self.network_part = None
         else:
-            color = ""
-            icon = ""
-            
-        self.network_part = color + icon + reset
+            self.network_part = {
+                "name": "network",
+                "full_text": icon,
+                "markup": "pango",
+                "align": "center",
+                "color": DARK,
+                "background": GREEN
+            }
+
         self.update_bar()
 
     def _battery(self, bat):
-        color = FG(DARK)
-        reset = FG(RESET) + BG(RESET)
+        bg = None
+        fg = DARK
 
-        modifier = ""
+        modifier = " "
         if bat["plugged"]:
-            modifier = " \uf0e7"
-
+            modifier = " " + FONTAWESOME("\uf0e7") + " "
         if bat["level"] == 100:
-            color += BG(BLUE)
-            icon = "\uf240"
+            bg = BLUE
+            icon = " " + FONTAWESOME("\uf240")
         elif bat["level"] > 80:
-            color += BG(GREEN)
-            icon = "\uf240"
+            bg = GREEN
+            icon = " " + FONTAWESOME("\uf240")
         elif bat["level"] > 60:
-            color += BG(GREEN)
-            icon = "\uf241"
+            bg = GREEN
+            icon = " " + FONTAWESOME("\uf241")
         elif bat["level"] > 40:
-            color += BG(GREEN)
-            icon = "\uf242"
+            bg = GREEN
+            icon = " " + FONTAWESOME("\uf242")
         elif bat["level"] > 20:
-            color += BG(YELLOW)
-            icon = "\uf243"
+            bg = YELLOW
+            icon = " " + FONTAWESOME("\uf243")
         else:
-            color += BG(RED)
-            icon = "\uf244"
+            bg = RED
+            icon = " " + FONTAWESOME("\uf244")
 
-        self.battery_part = color + " " + icon + modifier + " " + reset
+        self.battery_part = {
+            "name": "battery",
+            "full_text": icon + modifier,
+            "markup": "pango",
+            "align": "center",
+            "color": DARK
+        }
+
+        if bg != None:
+            self.battery_part["background"] = bg
+
         self.update_bar()
-
