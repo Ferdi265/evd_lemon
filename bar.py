@@ -99,9 +99,9 @@ class barModule(Module):
         fg = DARK
 
         icon = None
-        if state["ethernet"] == "connected":
+        if "ethernet" in state and state["ethernet"] == "connected":
             icon = " " + FONTAWESOME("\uf0ac") + " "
-        elif state["wifi"] == "connected":
+        elif "wifi" in state and state["wifi"] == "connected":
             icon = " " + FONTAWESOME("\uf1eb") + " "
 
         if icon == None:
