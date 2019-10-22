@@ -15,12 +15,12 @@ class barModule(Module):
         super().__init__()
 
         self._socketpath_binary = socketpath_binary
-        self.workspace_part = ""
-        self.mode_part = ""
-        self.title_part = ""
-        self.network_part = ""
-        self.battery_part = ""
-        self.date_part = ""
+        self.workspace_part = { "name": "workspace", "full_text": "" }
+        self.mode_part = { "name": "mode", "full_text": "" }
+        self.title_part = { "name": "title", "full_text": "" }
+        self.network_part = { "name": "network", "full_text": "" }
+        self.battery_part = { "name": "battery", "full_text": "" }
+        self.date_part = { "name": "date", "full_text": "" }
 
         self.close_part = {
             "name": "close",
