@@ -17,7 +17,7 @@ def scan_json_obj_naive(f):
         d += c
         return c
 
-    while chomp() in string.whitespace + ",":
+    while chomp() in string.whitespace + "," + "[":
         d = ""
 
     assert d == "{", "non-object encountered"
@@ -36,7 +36,6 @@ class barManagerModule(Module):
         print(json.dumps({ "version": 1, "click_events": True }))
         print("[")
         sys.stdout.flush()
-        sys.stdin.readline()
 
         self.listen("bar", "line", self._bar)
         self.listen_private("bar_action", self._bar_action)
