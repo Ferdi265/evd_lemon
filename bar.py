@@ -11,9 +11,10 @@ def FONTAWESOME(s):
 
 class barModule(Module):
     name = "bar"
-    def __init__(self):
+    def __init__(self, socketpath_binary = "i3"):
         super().__init__()
 
+        self._socketpath_binary = socketpath_binary
         self.workspace_part = ""
         self.mode_part = ""
         self.title_part = ""
@@ -37,6 +38,7 @@ class barModule(Module):
         super().register_daemon(daemon)
 
         if "wm" not in daemon.modules:
+            daemon.register(i3ipcModule(socketpath_binary = self._socketpath_binary))
             daemon.register(i3Module(events = ["window", "workspace", "shutdown"]))
 
         if "network" not in daemon.modules:
