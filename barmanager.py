@@ -28,7 +28,7 @@ def scan_json_obj_naive(f):
 
 class barManagerModule(Module):
     name = "barManager"
-    def __init__(self):
+    def __init__(self, skip_line):
         super().__init__()
 
         self.monitor_count = 1
@@ -36,6 +36,8 @@ class barManagerModule(Module):
         print(json.dumps({ "version": 1, "click_events": True }))
         print("[")
         sys.stdout.flush()
+        if skip_line:
+            sys.stdin.readline()
 
         self.listen("bar", "line", self._bar)
         self.listen_private("bar_action", self._bar_action)

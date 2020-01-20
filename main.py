@@ -1,22 +1,36 @@
 #!/usr/bin/env python3
 import sys
+from argparse import ArgumentParser
 from evdaemon import *
 from bar import barModule
 from barmanager import barManagerModule
 
-def main(sockbin):
+def parse():
+    parser = ArgumentParser(
+        "evd_lemon",
+        description = "A python-based i3/sway status-line program"
+    )
+
+    parser.add_argument("wm", help = "which window manager to run on (i3 / sway)")
+
+    args = parser.parse_args()
+    main(args)
+
+def main(args):
+    if args.wm == "i3":
+        sockbin = "i3"
+        skip_line = False
+    elif args.wm == "sway":
+        sockbin = "sway"
+        skip_line = True
+    else:
+        print("error: invalid window manager argument: '{}'".format(args.wm), file = sys.stderr)
+        sys.exit(1)
+
     daemon = Daemon()
     daemon.register(barModule(sockbin))
-    daemon.register(barManagerModule())
+    daemon.register(barManagerModule(skip_line))
     daemon.run()
 
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    if len(args) == 0:
-        sockbin = "i3"
-    elif len(args) == 1:
-        sockbin = args[0]
-    else:
-        print("usage: main.py [i3_socketpath_binary]")
-        sys.exit(1)
-    main(sockbin)
+    parse()
