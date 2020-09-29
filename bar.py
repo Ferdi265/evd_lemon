@@ -174,7 +174,7 @@ class barModule(Module):
 
         self.battery_part = {
             "name": "battery",
-            "full_text": icon + modifier,
+            "full_text": " " + str(bat["level"]) + "%" + icon + modifier,
             "markup": "pango",
             "align": "center",
             "color": DARK
