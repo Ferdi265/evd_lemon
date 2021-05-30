@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from argparse import ArgumentParser
-from evdaemon import *
+from evdaemon import Daemon
 from bar import barModule
 from barmanager import barManagerModule
 

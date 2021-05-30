@@ -1,6 +1,7 @@
-from evdaemon import *
-from evdmodule_i3 import *
+from evdaemon import Module
+from evdmodule_i3 import i3Module, i3ipcModule
 from linux import linuxModule
+from bluetooth import bluetoothModule
 from network import networkModule
 from battery import batteryModule
 from time import time
@@ -20,6 +21,7 @@ class barModule(Module):
         self.mode_part = { "name": "mode", "full_text": "" }
         self.title_part = { "name": "title", "full_text": "" }
         self.linux_part = { "name": "linux", "full_text": "" }
+        self.bluetooth_part = { "name": "bluetooth", "full_text": "" }
         self.network_part = { "name": "network", "full_text": "" }
         self.battery_part = { "name": "battery", "full_text": "" }
         self.date_part = { "name": "date", "full_text": "" }
@@ -33,6 +35,7 @@ class barModule(Module):
         }
 
         self.listen("linux", "updated", self._linux)
+        self.listen("bluetooth", "state", self._bluetooth)
         self.listen("wm", "title", self._title)
         self.listen("network", "state", self._network)
         self.listen("battery", "state", self._battery)
@@ -47,33 +50,39 @@ class barModule(Module):
         if "linux" not in daemon.modules:
             daemon.register(linuxModule())
 
+        if "bluetooth" not in daemon.modules:
+            daemon.register(bluetoothModule())
+
         if "network" not in daemon.modules:
             daemon.register(networkModule())
 
         if "battery" not in daemon.modules:
             daemon.register(batteryModule())
 
-        self._wm = self.global_state.wm
-        self._linux = daemon.modules["linux"]
-        self._net = daemon.modules["network"]
-        self._bat = daemon.modules["battery"]
+        self._mod_wm = self.global_state.wm
+        self._mod_linux = daemon.modules["linux"]
+        self._mod_bluetooth = daemon.modules["bluetooth"]
+        self._mod_net = daemon.modules["network"]
+        self._mod_bat = daemon.modules["battery"]
         self._check_periodic()
         self._check_clock()
 
     def unregister_daemon(self, daemon):
         super().unregister_daemon(daemon)
-        self._wm = None
-        self._linux = None
-        self._net = None
-        self._bat = None
+        self._mod_wm = None
+        self._mod_linux = None
+        self._mod_bluetooth = None
+        self._mod_net = None
+        self._mod_bat = None
 
-    def _check_periodic(self, time_diff = 0):
-        self._linux.check_linux()
-        self._net.check_connectivity()
-        self._bat.check_battery()
+    def _check_periodic(self, _ = 0):
+        self._mod_linux.check_linux()
+        self._mod_bluetooth.check_bluetooth()
+        self._mod_net.check_connectivity()
+        self._mod_bat.check_battery()
         self.timeout(5, self._check_periodic)
 
-    def _check_clock(self, time_diff = 0):
+    def _check_clock(self, _ = 0):
         now = time()
         dt_now = datetime.fromtimestamp(now)
         self.date_part = {
@@ -92,6 +101,7 @@ class barModule(Module):
         bar_line = [
             self.title_part,
             self.linux_part,
+            self.bluetooth_part,
             self.network_part,
             self.battery_part,
             self.date_part,
@@ -102,7 +112,7 @@ class barModule(Module):
     def _title(self):
         self.title_part = {
             "name": "title",
-            "full_text": self._wm.title
+            "full_text": self._mod_wm.title
         }
         self.update_bar()
 
@@ -119,6 +129,22 @@ class barModule(Module):
             }
         else:
             self.linux_part = { "name": "linux", "full_text": "" }
+
+        self.update_bar()
+
+    def _bluetooth(self, running):
+        if running:
+            icon = " " + FONTAWESOME("\uf293") + " "
+            self.bluetooth_part = {
+                "name": "bluetooth",
+                "full_text": icon,
+                "markup": "pango",
+                "align": "center",
+                "color": DARK,
+                "background": GREEN
+            }
+        else:
+            self.bluetooth_part = { "name": "bluetooth", "full_text": "" }
 
         self.update_bar()
 
@@ -140,8 +166,8 @@ class barModule(Module):
                 "full_text": icon,
                 "markup": "pango",
                 "align": "center",
-                "color": DARK,
-                "background": GREEN
+                "color": fg,
+                "background": bg
             }
 
         self.update_bar()
@@ -150,10 +176,17 @@ class barModule(Module):
         bg = None
         fg = DARK
 
+        strlevel = str(bat["level"])
         modifier = " "
+
         if bat["plugged"]:
             modifier = " " + FONTAWESOME("\uf0e7") + " "
-        if bat["level"] == 100:
+
+        if bat["level"] is None:
+            bg = YELLOW
+            icon = " " + FONTAWESOME("\uf244") + " "
+            strlevel = "?"
+        elif bat["level"] == 100:
             bg = BLUE
             icon = " " + FONTAWESOME("\uf240")
         elif bat["level"] > 80:
@@ -174,10 +207,10 @@ class barModule(Module):
 
         self.battery_part = {
             "name": "battery",
-            "full_text": " " + str(bat["level"]) + "%" + icon + modifier,
+            "full_text": " " + strlevel + "%" + icon + modifier,
             "markup": "pango",
             "align": "center",
-            "color": DARK
+            "color": fg
         }
 
         if bg != None:

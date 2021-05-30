@@ -2,11 +2,9 @@ import sys
 import string
 import json
 
-from evdaemon import *
+from evdaemon import Module
 from evdmodule_i3 import i3Module, i3ipcModule
 from color import *
-
-from subprocess import Popen, DEVNULL, PIPE
 
 def scan_json_obj_naive(f):
     d = ""

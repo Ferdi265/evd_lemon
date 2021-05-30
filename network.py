@@ -1,4 +1,4 @@
-from evdaemon import *
+from evdaemon import Module
 from subprocess import Popen, DEVNULL, PIPE
 
 class networkModule(Module):
