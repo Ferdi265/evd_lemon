@@ -9,7 +9,7 @@ from datetime import datetime
 from color import *
 
 def FONTAWESOME(s):
-    return '<span font="Font Awesome 5 Free">' + s + '</span>'
+    return '<span font="Font Awesome 6 Free">' + s + '</span>'
 
 class barModule(Module):
     name = "bar"
@@ -186,21 +186,21 @@ class barModule(Module):
             bg = YELLOW
             icon = " " + FONTAWESOME("\uf244") + " "
             strlevel = "?"
-        elif bat["level"] == 100:
+        elif bat["level"] >= 90:
             bg = BLUE
             icon = " " + FONTAWESOME("\uf240")
-        elif bat["level"] > 80:
-            bg = GREEN
-            icon = " " + FONTAWESOME("\uf240")
-        elif bat["level"] > 60:
+        elif bat["level"] >= 75:
             bg = GREEN
             icon = " " + FONTAWESOME("\uf241")
-        elif bat["level"] > 40:
+        elif bat["level"] >= 50:
             bg = GREEN
             icon = " " + FONTAWESOME("\uf242")
-        elif bat["level"] > 20:
-            bg = YELLOW
+        elif bat["level"] >= 25:
+            bg = GREEN
             icon = " " + FONTAWESOME("\uf243")
+        elif bat["level"] >= 10:
+            bg = YELLOW
+            icon = " " + FONTAWESOME("\uf244")
         else:
             bg = RED
             icon = " " + FONTAWESOME("\uf244")
