@@ -12,6 +12,8 @@ def scan_json_obj_naive(f):
     def chomp():
         nonlocal d
         c = f.read(1)
+        if c == '':
+            raise EOFError("unexpected end of object stream")
         d += c
         return c
 
