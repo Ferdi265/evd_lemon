@@ -16,7 +16,7 @@ class micModule(Module):
         self.register_file(self._pavol.stdout, "pavol_ready")
 
     def toggle_mic(self):
-        run(["pavol", "micmute"], stdin = DEVNULL, stdout = DEVNULL)
+        run(["pavol", "micmute", "-quiet"], stdin = DEVNULL, stdout = DEVNULL)
         self.check_mic()
 
     def _pavol_ready(self):
