@@ -4,6 +4,7 @@ import json
 
 from evdaemon import Module
 from evdmodule_i3 import i3Module, i3ipcModule
+from mic import micModule
 from color import *
 
 def scan_json_obj_naive(f):
@@ -52,8 +53,12 @@ class barManagerModule(Module):
         if "i3ipc" not in daemon.modules:
             daemon.register(i3ipcModule())
 
+        if "mic" not in daemon.modules:
+            daemon.register(micModule())
+
         self._wm = self.global_state.wm
         self._ipc = daemon.modules["i3ipc"]
+        self._mod_mic = daemon.modules["mic"]
 
     def unregister_daemon(self, daemon):
         super().unregister_daemon(daemon)
@@ -69,3 +74,5 @@ class barManagerModule(Module):
         msg = scan_json_obj_naive(sys.stdin)
         if "name" in msg and msg["name"] == "close":
             self._ipc.send_cmd("command", "kill")
+        if "name" in msg and msg["name"] == "mic":
+            self._mod_mic.toggle_mic()

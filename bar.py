@@ -2,6 +2,7 @@ from evdaemon import Module
 from evdmodule_i3 import i3Module, i3ipcModule
 from linux import linuxModule
 from bluetooth import bluetoothModule
+from mic import micModule
 from network import networkModule
 from battery import batteryModule
 from time import time
@@ -22,6 +23,7 @@ class barModule(Module):
         self.title_part = { "name": "title", "full_text": "" }
         self.linux_part = { "name": "linux", "full_text": "" }
         self.bluetooth_part = { "name": "bluetooth", "full_text": "" }
+        self.mic_part = { "name": "mic", "full_text": "" }
         self.network_part = { "name": "network", "full_text": "" }
         self.battery_part = { "name": "battery", "full_text": "" }
         self.date_part = { "name": "date", "full_text": "" }
@@ -37,6 +39,7 @@ class barModule(Module):
         self.listen("linux", "updated", self._linux)
         self.listen("bluetooth", "state", self._bluetooth)
         self.listen("wm", "title", self._title)
+        self.listen("mic", "state", self._mic)
         self.listen("network", "state", self._network)
         self.listen("battery", "state", self._battery)
 
@@ -53,6 +56,9 @@ class barModule(Module):
         if "bluetooth" not in daemon.modules:
             daemon.register(bluetoothModule())
 
+        if "mic" not in daemon.modules:
+            daemon.register(micModule())
+
         if "network" not in daemon.modules:
             daemon.register(networkModule())
 
@@ -62,6 +68,7 @@ class barModule(Module):
         self._mod_wm = self.global_state.wm
         self._mod_linux = daemon.modules["linux"]
         self._mod_bluetooth = daemon.modules["bluetooth"]
+        self._mod_mic = daemon.modules["mic"]
         self._mod_net = daemon.modules["network"]
         self._mod_bat = daemon.modules["battery"]
         self._check_periodic()
@@ -78,6 +85,7 @@ class barModule(Module):
     def _check_periodic(self, _ = 0):
         self._mod_linux.check_linux()
         self._mod_bluetooth.check_bluetooth()
+        self._mod_mic.check_mic()
         self._mod_net.check_connectivity()
         self._mod_bat.check_battery()
         self.timeout(5, self._check_periodic)
@@ -102,6 +110,7 @@ class barModule(Module):
             self.title_part,
             self.linux_part,
             self.bluetooth_part,
+            self.mic_part,
             self.network_part,
             self.battery_part,
             self.date_part,
@@ -145,6 +154,25 @@ class barModule(Module):
             }
         else:
             self.bluetooth_part = { "name": "bluetooth", "full_text": "" }
+
+        self.update_bar()
+
+    def _mic(self, state):
+        bg = GREEN
+        fg = DARK
+
+        icon = None
+        if "muted" in state:
+            icon = " " + FONTAWESOME("\uf131" if state["muted"] else " \uf130 ") + " "
+
+        self.mic_part = {
+            "name": "mic",
+            "full_text": icon,
+            "markup": "pango",
+            "align": "center",
+            "color": fg,
+            "background": bg
+        }
 
         self.update_bar()
 
