@@ -1,0 +1,26 @@
+
+[build-system]
+requires            = ["setuptools>=61.0"]
+build-backend       = "setuptools.build_meta"
+
+[project]
+name                = "evd_lemon"
+dynamic             = ["readme", "version", "dependencies"]
+authors             = [{ name = "Ferdinand Bachmann", email = "ferdinand.bachmann@yrlf.at" }]
+description         = "sway or i3 status command"
+requires-python     = ">=3.5"
+classifiers         = [
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+"evd-lemon"         = "evd_lemon.cli:main"
+
+[project.urls]
+"Homepage"          = "https://github.com/Ferdi265/evd_lemon"
+"Bug Tracker"       = "https://github.com/Ferdi265/evd_lemon/issues"
+
+[tool.setuptools.dynamic]
+version             = { attr = "evd_lemon.__version__" }
+readme              = { file = ["README.md"], content-type = "text/markdown" }
+dependencies        = { file = ["requirements.txt"] }
