@@ -1,13 +1,14 @@
-from evdaemon import Module
-from evdmodule_i3 import i3Module, i3ipcModule
-from linux import linuxModule
-from bluetooth import bluetoothModule
-from mic import micModule
-from network import networkModule
-from battery import batteryModule
 from time import time
 from datetime import datetime
-from color import *
+
+from evdaemon import Module
+from evdmodule_i3 import i3Module, i3ipcModule
+from .color import *
+from .bluetooth import bluetoothModule
+from .mic import micModule
+from .network import networkModule
+from .battery import batteryModule
+from .linux import linuxModule
 
 def FONTAWESOME(s):
     return '<span font="Font Awesome 6 Free">' + s + '</span>'

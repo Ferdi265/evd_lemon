@@ -2,10 +2,10 @@
 import sys
 from argparse import ArgumentParser
 from evdaemon import Daemon
-from bar import barModule
-from barmanager import barManagerModule
+from .barmanager import barManagerModule
+from .bar import barModule
 
-def parse():
+def parse_args():
     parser = ArgumentParser(
         "evd_lemon",
         description = "A python-based i3/sway status-line program"
@@ -13,10 +13,11 @@ def parse():
 
     parser.add_argument("wm", help = "which window manager to run on (i3 / sway)")
 
-    args = parser.parse_args()
-    main(args)
+    return parser.parse_args()
 
-def main(args):
+def main():
+    args = parse_args()
+
     if args.wm == "i3":
         sockbin = "i3"
         skip_line = False
@@ -33,4 +34,4 @@ def main(args):
     daemon.run()
 
 if __name__ == "__main__":
-    parse()
+    main()

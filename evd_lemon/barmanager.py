@@ -4,8 +4,8 @@ import json
 
 from evdaemon import Module
 from evdmodule_i3 import i3Module, i3ipcModule
-from mic import micModule
-from color import *
+from .color import *
+from .mic import micModule
 
 def scan_json_obj_naive(f):
     d = ""
