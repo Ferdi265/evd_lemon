@@ -1,5 +1,6 @@
 from evdaemon import Module
 from subprocess import Popen, DEVNULL, PIPE
+import socket
 
 class batteryModule(Module):
     name = "battery"
@@ -8,10 +9,19 @@ class batteryModule(Module):
         self._upower = None
         self.listen_private("upower_ready", self._upower_ready)
 
+        if socket.gethostname() == "momo":
+            self._charge_max = 80
+            self._battery_path = "/org/freedesktop/UPower/devices/battery_BAT1"
+        else:
+            self._charge_max = 100
+            self._battery_path = "/org/freedesktop/UPower/devices/battery_BAT0"
+
+
     def check_battery(self):
         if self._upower != None:
             return
-        self._upower = Popen(["upower", "-i", "/org/freedesktop/UPower/devices/battery_BAT0"], stdin = DEVNULL, stdout = PIPE)
+
+        self._upower = Popen(["upower", "-i", self._battery_path], stdin = DEVNULL, stdout = PIPE)
         self._upower_data = b""
         self.register_file(self._upower.stdout, "upower_ready")
 
@@ -49,5 +59,8 @@ class batteryModule(Module):
                     state["level"] = int(value[:-1], 10)
                 except ValueError:
                     pass
+
+        if state["level"] is not None:
+            state["level"] = int(state["level"] * 100 / self._charge_max)
 
         self.emit("battery", "state", state)
