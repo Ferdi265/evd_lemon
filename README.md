@@ -4,8 +4,7 @@
 project was originally created for use with lemonbar, but I have since stopped
 using it.
 
-The whole code is quite legacy, but still works, and I will likely replace it
-with a real Python `async` implementation soon.
+MAINTENANCE NOTE: This project is discontinued.
 
 ## Installation
 
